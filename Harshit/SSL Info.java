@@ -1,71 +1,95 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
+import javax.net.ssl.*;
+import java.io.*;
 import java.net.URL;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.security.KeyStore;
-import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
 
-public class HttpPostExample {
+public class HttpsPostWithoutCertValidation {
+    
     public static void main(String[] args) {
         try {
-            // Set up SSL context with your certificates
-            String keystorePath = "path/to/keystore.jks";
-            String keystorePassword = "password";
+            // Disable SSL certificate validation
+            disableSslValidation();
             
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
+            // API endpoint URL
+            String apiUrl = "https://api.example.com/endpoint";
             
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(keyStore);
-            
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, tmf.getTrustManagers(), null);
-            
-            // Set as default SSL context
-            SSLContext.setDefault(sslContext);
-            
-            // Create connection
-            URL url = new URL("https://api.example.com/endpoint");
-            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            
-            // Set request method and headers
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-            
-            // Prepare JSON payload
+            // JSON payload
             String jsonPayload = "{\"key1\":\"value1\",\"key2\":\"value2\"}";
             
-            // Send request
-            try (OutputStream os = conn.getOutputStream()) {
+            // Make the POST request
+            String response = sendHttpsPostRequest(apiUrl, jsonPayload);
+            
+            // Print the response
+            System.out.println("Response: " + response);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void disableSslValidation() throws Exception {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[] {
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() { return null; }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+                public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+            }
+        };
+        
+        // Install the all-trusting trust manager
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+        
+        // Create all-trusting host name verifier
+        HostnameVerifier allHostsValid = new HostnameVerifier() {
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
+        
+        // Install the all-trusting host verifier
+        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+    }
+    
+    private static String sendHttpsPostRequest(String apiUrl, String jsonPayload) throws IOException {
+        URL url = new URL(apiUrl);
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        
+        try {
+            // Configure the connection
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setDoOutput(true);
+            
+            // Send the request
+            try (OutputStream os = connection.getOutputStream()) {
                 byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
                 os.write(input, 0, input.length);
             }
             
-            // Read response
-            int responseCode = conn.getResponseCode();
+            // Get response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+            
+            // Read the response
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    responseCode >= 200 && responseCode < 300 ? conn.getInputStream() : conn.getErrorStream()))) {
+                    responseCode >= 200 && responseCode < 300 ? 
+                    connection.getInputStream() : connection.getErrorStream(), 
+                    StandardCharsets.UTF_8))) {
+                
                 StringBuilder response = new StringBuilder();
                 String line;
                 while ((line = br.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println("Response Code: " + responseCode);
-                System.out.println("Response: " + response.toString());
+                return response.toString();
             }
-            
-            conn.disconnect();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
+        } finally {
+            connection.disconnect();
         }
     }
 }
