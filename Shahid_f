@@ -1,8 +1,8 @@
 <label>From Date:</label>
-<input type="date" id="from_date">
+<input type="text" id="from_date" placeholder="MM/DD/YYYY">
 
 <label>To Date:</label>
-<input type="date" id="to_date">
+<input type="text" id="to_date" placeholder="MM/DD/YYYY">
 
 <script>
     function setupDateFields() {
@@ -10,33 +10,47 @@
         const pastDate = new Date();
         pastDate.setDate(today.getDate() - 120);
 
-        const formatDate = date => date.toISOString().split('T')[0];
+        // Helper to parse MM/DD/YYYY to Date
+        function parseDate(str) {
+            const [month, day, year] = str.split('/');
+            return new Date(`${year}-${month}-${day}`);
+        }
 
-        const fromDate = document.getElementById('from_date');
-        const toDate = document.getElementById('to_date');
+        // Helper to format Date to MM/DD/YYYY
+        function formatDate(date) {
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${month}/${day}/${year}`;
+        }
 
-        const minDate = formatDate(pastDate);
-        const maxDate = formatDate(today);
+        const fromDateInput = document.getElementById('from_date');
+        const toDateInput = document.getElementById('to_date');
 
-        // Set limits on both fields
-        fromDate.min = toDate.min = minDate;
-        fromDate.max = toDate.max = maxDate;
+        // Set default today's date
+        fromDateInput.value = formatDate(today);
+        toDateInput.value = formatDate(today);
 
-        // When from_date changes
-        fromDate.addEventListener('change', function() {
-            if (fromDate.value > toDate.value) {
-                toDate.value = fromDate.value;
+        function validateDates() {
+            const fromDate = parseDate(fromDateInput.value);
+            const toDate = parseDate(toDateInput.value);
+
+            // Check valid date range (between pastDate and today)
+            if (fromDate < pastDate) fromDateInput.value = formatDate(pastDate);
+            if (fromDate > today) fromDateInput.value = formatDate(today);
+
+            if (toDate < pastDate) toDateInput.value = formatDate(pastDate);
+            if (toDate > today) toDateInput.value = formatDate(today);
+
+            // Ensure from_date <= to_date
+            if (fromDate > toDate) {
+                toDateInput.value = fromDateInput.value;
             }
-        });
+        }
 
-        // When to_date changes
-        toDate.addEventListener('change', function() {
-            if (toDate.value < fromDate.value) {
-                fromDate.value = toDate.value;
-            }
-        });
+        fromDateInput.addEventListener('change', validateDates);
+        toDateInput.addEventListener('change', validateDates);
     }
 
-    // Call function after DOM is ready
     document.addEventListener('DOMContentLoaded', setupDateFields);
 </script>
