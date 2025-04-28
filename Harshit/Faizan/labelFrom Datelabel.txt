@@ -1,0 +1,35 @@
+<label>From Date:</label>
+<input type="date" id="from_date">
+
+<label>To Date:</label>
+<input type="date" id="to_date">
+
+<script>
+    // Get today's date
+    const today = new Date();
+
+    // Get date 120 days ago
+    const pastDate = new Date();
+    pastDate.setDate(today.getDate() - 120);
+
+    // Function to format dates to YYYY-MM-DD
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Set the min and max attributes
+    const fromDate = document.getElementById('from_date');
+    const toDate = document.getElementById('to_date');
+
+    const minDate = formatDate(pastDate); // 120 days ago
+    const maxDate = formatDate(today);    // today
+
+    fromDate.setAttribute('min', minDate);
+    fromDate.setAttribute('max', maxDate);
+
+    toDate.setAttribute('min', minDate);
+    toDate.setAttribute('max', maxDate);
+</script>
