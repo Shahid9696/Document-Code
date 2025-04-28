@@ -1,14 +1,1 @@
-String workingDirectory = System.getProperty("user.dir");
-			//String jksFile = workingDirectory + File.separator + SSL_Certificate_folder + File.separator + SSL_Certificate_name;
-			String cacertsFile = workingDirectory + File.separator + SSL_Certificate_folder + File.separator + SSL_Certificate_name;
-				
-			String packageHndStr = "javax.net.ssl";
-			java.lang.System.setProperty("java.protocol.handler.pkgs", packageHndStr);		
-			java.lang.System.setProperty("Content-Type", "text/html");
-			java.lang.System.setProperty("Content-Type", "application/soap+xml; charset=utf-8");
-			java.lang.System.setProperty("javax.net.ssl.keyStore", cacertsFile);		
-			java.lang.System.setProperty("javax.net.ssl.keyStoreType", java.security.KeyStore.getDefaultType());
-			java.lang.System.setProperty("javax.net.ssl.keyStorePassword", SSL_password);		
-			java.lang.System.setProperty("javax.net.ssl.trustStore", cacertsFile);
-			java.lang.System.setProperty("javax.net.ssl.trustStoreType",  java.security.KeyStore.getDefaultType());
-			java.lang.System.setProperty("javax.net.ssl.trustStorePassword", SSL_password);
+keytool -import -alias youralias -keystore $JAVA_HOME/lib/security/cacerts -file servercert.cer
