@@ -5,15 +5,38 @@
 <input type="date" id="to_date">
 
 <script>
-    const today = new Date(), pastDate = new Date(today);
-    pastDate.setDate(today.getDate() - 120);
+    function setupDateFields() {
+        const today = new Date();
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - 120);
 
-    // Function to format dates as MM/DD/YYYY
-    const formatDate = date => `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
+        const formatDate = date => date.toISOString().split('T')[0];
 
-    const [fromDate, toDate] = [document.getElementById('from_date'), document.getElementById('to_date')];
+        const fromDate = document.getElementById('from_date');
+        const toDate = document.getElementById('to_date');
 
-    fromDate.min = toDate.min = formatDate(pastDate);
-    fromDate.max = toDate.max = formatDate(today);
+        const minDate = formatDate(pastDate);
+        const maxDate = formatDate(today);
+
+        // Set limits on both fields
+        fromDate.min = toDate.min = minDate;
+        fromDate.max = toDate.max = maxDate;
+
+        // When from_date changes
+        fromDate.addEventListener('change', function() {
+            if (fromDate.value > toDate.value) {
+                toDate.value = fromDate.value;
+            }
+        });
+
+        // When to_date changes
+        toDate.addEventListener('change', function() {
+            if (toDate.value < fromDate.value) {
+                fromDate.value = toDate.value;
+            }
+        });
+    }
+
+    // Call function after DOM is ready
+    document.addEventListener('DOMContentLoaded', setupDateFields);
 </script>
-
