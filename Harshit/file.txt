@@ -1,5 +1,11 @@
-"C:\Program Files\Java\jre1.8.0_251\bin\keytool" -import \
- -trustcacerts \
- -keystore "D:\newgen\Custom Utilities\OmniFlow\SMS_Integration\SMS_Certificate\SMSSSL.jks" \
- -file "D:\newgen\Custom Utilities\OmniFlow\SMS_Integration\SMS_Certificate\48383.cer" \
+cd {pathWhereYouNeedToCreateNewKeystore}
+echo {keyStoreFileName}
+
+"C:\Program Files\Java\jre1.8.0_251\bin\keytool" -import ^
+ -trustcacerts ^
+ -keystore "{keyStoreFileName}" ^
+ -file "D:\newgen\Custom Utilities\OmniFlow\SMS_Integration\SMS_Certificate\{certificateFileName}" ^
  -alias sms_cert
+
+
+
