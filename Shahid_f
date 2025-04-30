@@ -5,3 +5,13 @@ function getCurrentDateDDMMYYYY() {
   const year = today.getFullYear();
   return `${day}/${month}/${year}`;
 }
+
+function getPastDate120DaysDDMMYYYY() {
+  const pastDate = new Date();
+  pastDate.setDate(pastDate.getDate() - 120);
+  const day = String(pastDate.getDate()).padStart(2, '0');
+  const month = String(pastDate.getMonth() + 1).padStart(2, '0');
+  const year = pastDate.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
